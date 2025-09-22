@@ -1,0 +1,4 @@
+- hosts: node_server
+  become: yes
+  roles:
+    - app
