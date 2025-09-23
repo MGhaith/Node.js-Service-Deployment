@@ -46,12 +46,6 @@ jobs:
         shell: bash
         working-directory: ./ansible
 
-      - name: Add server to known_hosts
-        working-directory: ./ansible
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
-
       - name: Generate Ansible inventory
         working-directory: ./ansible
         run: |
@@ -70,4 +64,6 @@ jobs:
 
       - name: Run Ansible Playbook
         working-directory: ./ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
         run: ansible-playbook -i inventory.ini node_service.yml
