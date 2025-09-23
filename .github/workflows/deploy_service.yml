@@ -1,0 +1,53 @@
+name: Deploy Node.js Service
+
+on:
+  push:
+    branches: [ "testing-cicd" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials via OIDC (Terraform)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::075091538636:role/github-oidc-terraform
+          aws-region: us-east-1
+
+      - name: Deploy EC2 Instance
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+
+      - name: Get server IP
+        id: tf
+        run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_ENV
+
+      - name: Write SSH key file
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+        shell: bash
+        working-directory: ./ansible
+
+      - name: Generate Ansible inventory
+        working-directory: ./ansible
+        run: |
+          export SSH_KEY_PATH=$(pwd)/private_key.pem
+          envsubst < inventory.ini.template > inventory.ini
+        shell: bash
+        env:
+          SERVER_IP: ${{ env.SERVER_IP }}
+
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Run Ansible Playbook
+        working-directory: ./ansible
+        run: ansible-playbook -i inventory.ini node_service.yml
