@@ -49,14 +49,18 @@ jobs:
       - name: Generate Ansible inventory
         working-directory: ./ansible
         run: |
-          export SSH_KEY_PATH=$(pwd)/private_key.pem
-          envsubst < inventory.ini.template > inventory.ini
+          SSH_KEY_PATH=$(pwd)/private_key.pem
+          envsubst '${SERVER_IP} ${SSH_KEY_PATH}' < inventory.ini.template > inventory.ini
         shell: bash
         env:
           SERVER_IP: ${{ env.SERVER_IP }}
 
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Show generated inventory
+        working-directory: ./ansible
+        run: cat inventory.ini
 
       - name: Run Ansible Playbook
         working-directory: ./ansible
