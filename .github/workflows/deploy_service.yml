@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "testing-cicd" ]
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
