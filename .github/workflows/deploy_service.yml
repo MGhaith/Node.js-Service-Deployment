@@ -58,10 +58,6 @@ jobs:
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
 
-      - name: Show generated inventory
-        working-directory: ./ansible
-        run: cat inventory.ini
-
       - name: Run Ansible Playbook
         working-directory: ./ansible
         env:
