@@ -12,6 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Configure AWS credentials via OIDC (Terraform)
         uses: aws-actions/configure-aws-credentials@v4
         with:
