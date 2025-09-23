@@ -1,0 +1,65 @@
+name: Deploy Node.js Service
+
+on:
+  push:
+    branches: [ "testing-cicd" ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials via OIDC (Terraform)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::075091538636:role/github-node-oicd
+          aws-region: us-east-1
+
+      - name: Deploy EC2 Instance
+        working-directory: ./terraform
+        env:
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+        run: |
+          terraform init
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+
+      - name: Get server IP
+        working-directory: ./terraform
+        id: tf
+        run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_ENV
+
+      - name: Write SSH key file
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+        shell: bash
+        working-directory: ./ansible
+
+      - name: Generate Ansible inventory
+        working-directory: ./ansible
+        run: |
+          SSH_KEY_PATH=$(pwd)/private_key.pem
+          echo "[node_server]" > inventory.ini
+          echo "${{ env.SERVER_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> inventory.ini
+          echo "[node_server:vars]" >> inventory.ini
+          echo "ansible_python_interpreter=/usr/bin/python3" >> inventory.ini
+
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Run Ansible Playbook
+        working-directory: ./ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: ansible-playbook -i inventory.ini node_service.yml
