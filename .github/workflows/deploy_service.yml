@@ -50,10 +50,10 @@ jobs:
         working-directory: ./ansible
         run: |
           SSH_KEY_PATH=$(pwd)/private_key.pem
-          envsubst '${SERVER_IP} ${SSH_KEY_PATH}' < inventory.ini.template > inventory.ini
-        shell: bash
-        env:
-          SERVER_IP: ${{ env.SERVER_IP }}
+          echo "[node_server]" > inventory.ini
+          echo "${{ env.SERVER_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> inventory.ini
+          echo "[node_server:vars]" >> inventory.ini
+          echo "ansible_python_interpreter=/usr/bin/python3" >> inventory.ini
 
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
