@@ -35,8 +35,9 @@ jobs:
           terraform apply -auto-approve tfplan
 
       - name: Get server IP
+        working-directory: ./terraform
         id: tf
-        run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_ENV
+        run: echo "SERVER_IP=$(terraform output -raw node_app_ip)" >> $GITHUB_ENV
 
       - name: Write SSH key file
         run: |
