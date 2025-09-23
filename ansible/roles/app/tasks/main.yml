@@ -1,0 +1,41 @@
+- name: Clone repo into tmp
+  git:
+    repo: "https://github.com/MGhaith/Nodejs-Service-Deployment.git"
+    dest: /tmp/node-service-repo
+    version: main
+
+- name: Copy only the service folder to deploy directory
+  copy:
+    src: /tmp/node-service-repo/node_app/
+    dest: /var/www/node-service/
+    owner: www-data
+    group: www-data
+    mode: "0755"
+    remote_src: yes
+
+- name: Remove tmp repo
+  file:
+    path: /tmp/node-service-repo
+    state: absent
+
+- name: Install Node.js and npm
+  apt:
+    name: nodejs,npm
+    state: present
+    update_cache: yes
+
+- name: Install app dependencies
+  npm:
+    path: /var/www/node-service
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+
+- name: Start app with PM2
+  shell: |
+    pm2 stop node-service || true
+    pm2 start /var/www/node-service/index.js --name node-service
+    pm2 startup systemd
+    pm2 save
