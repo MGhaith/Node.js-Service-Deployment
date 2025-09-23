@@ -1,6 +1,15 @@
+# resource "aws_key_pair" "default" {
+#   key_name   = "node-app-key"
+#   public_key = file("~/.ssh/id_rsa.pub")
+# }
+
 resource "aws_key_pair" "default" {
   key_name   = "node-app-key"
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = var.ssh_public_key
+}
+
+variable "ssh_public_key" {
+  type = string
 }
 
 resource "aws_instance" "server" {

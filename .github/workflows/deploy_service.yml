@@ -27,6 +27,8 @@ jobs:
 
       - name: Deploy EC2 Instance
         working-directory: ./terraform
+        env:
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
         run: |
           terraform init
           terraform plan -out=tfplan
