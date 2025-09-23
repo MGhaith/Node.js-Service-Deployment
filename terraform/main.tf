@@ -12,7 +12,7 @@ variable "ssh_public_key" {
   type = string
 }
 
-resource "aws_instance" "server" {
+resource "aws_instance" "node_app" {
   ami           = "ami-0360c520857e3138f" # Ubuntu 24.04
   instance_type = "t3.micro"
   key_name      = aws_key_pair.default.key_name
