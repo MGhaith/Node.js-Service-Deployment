@@ -46,6 +46,12 @@ jobs:
         shell: bash
         working-directory: ./ansible
 
+      - name: Add server to known_hosts
+        working-directory: ./ansible
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
+
       - name: Generate Ansible inventory
         working-directory: ./ansible
         run: |
