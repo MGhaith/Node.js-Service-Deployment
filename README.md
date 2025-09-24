@@ -177,5 +177,9 @@ The GitHub Actions workflow (`deploy_service.yml`) automates the deployment proc
 
 The workflow uses repository secrets (`SSH_PRIVATE_KEY` and `SSH_PUBLIC_KEY`) for secure access and AWS OIDC for authentication. It follows IaC principles by using Terraform for infrastructure provisioning and Ansible for configuration management.
 
+## Secrets & Security Notes
+- The SSH private key and public key must be kept as Github secret, and never commit it to the repo.
+- The `ANSIBLE_HOST_KEY_CHECKING=False` in `.github\workflows\deploy_service.yml` is used in CI for ephemeral runners for the `ansible` job.
+
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/MGhaith/Nodejs-Service-Deployment/blob/main/LICENSE) file for details.
