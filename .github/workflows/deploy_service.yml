@@ -15,6 +15,8 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    outputs:
+      server_ip: ${{ steps.tf.outputs.SERVER_IP }}
 
     steps:
       - name: Checkout code
@@ -39,9 +41,9 @@ jobs:
           terraform apply -auto-approve tfplan
 
       - name: Get server IP
-        working-directory: ./terraform
         id: tf
-        run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_ENV
+        working-directory: ./terraform
+        run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_OUTPUT
   
   ansible:
     runs-on: ubuntu-latest
