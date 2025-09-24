@@ -63,3 +63,28 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: ansible-playbook -i inventory.ini node_service.yml
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()  # only runs if the deploy job fails
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials via OIDC (Terraform)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::075091538636:role/github-node-oicd
+          aws-region: us-east-1
+
+      - name: Destroy resources
+        working-directory: ./terraform
+        env:
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+        run: |
+          terraform init
+          terraform destroy -auto-approve
