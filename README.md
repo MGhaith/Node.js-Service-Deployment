@@ -82,7 +82,6 @@ You need this repository to store the project code, trigger the deployment workf
 3. Navigate to the S3 service and create a new DynamoDB table for state locking
     - Table name: `node-app-terraform-locks`
     - Partition key: `LockID` (String)
-    - Sort key: `LockID` (String)
     - Create table
 4. update `terraform\backend.tf` with your bucket name and DynamoDB table name.
     ``` hcl
