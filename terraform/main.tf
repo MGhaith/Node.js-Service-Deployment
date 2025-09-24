@@ -1,8 +1,3 @@
-# resource "aws_key_pair" "default" {
-#   key_name   = "node-app-key"
-#   public_key = file("~/.ssh/id_rsa.pub")
-# }
-
 resource "aws_key_pair" "default" {
   key_name   = "node-app-key"
   public_key = var.ssh_public_key
