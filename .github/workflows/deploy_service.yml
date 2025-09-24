@@ -3,6 +3,10 @@ name: Deploy Node.js Service
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+        - 'README.md'
+        - '.gitignore'
+        - '.gitattributes'
 
 permissions:
   id-token: write
