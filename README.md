@@ -71,6 +71,34 @@ You need this repository to store the project code, trigger the deployment workf
     ```
 5. Copy the Role ARN, we will need it later.
 
+#### 4. Create S3 bucket and DynamoDB table for Terraform state
+1. Log in to the [AWS Management Console](https://console.aws.amazon.com/).
+2. Navigate to the S3 service and create a new S3 bucket.
+    - Bucket name: `node-app-terraform-state-<Your AWS Account ID>` (Replace `<Your AWS Account ID>` with your AWS Account ID)
+    - Region: `us-east-1`
+    - Enable versioning
+    - Enable public access block
+    - Create bucket
+3. Navigate to the S3 service and create a new DynamoDB table for state locking
+    - Table name: `node-app-terraform-locks`
+    - Partition key: `LockID` (String)
+    - Sort key: `LockID` (String)
+    - Create table
+4. update `terraform\backend.tf` with your bucket name and DynamoDB table name.
+    ``` hcl
+    terraform {
+      required_version = ">= 1.13.0"
+  
+      backend "s3" {
+        bucket         = "node-app-terraform-state-<Your AWS Account ID>"   # Change this
+        key            = "global/terraform.tfstate"                     
+        region         = "us-east-1"                                    
+        dynamodb_table = "node-app-terraform-locks"                         # And this 
+        encrypt        = true                                           
+      }
+    }
+    ```
+
 #### 4. Update project files.
 1. In `.github\workflows\deploy_service.yml`, change the `role-to-assume` value to your role ARN.
     ``` yml
