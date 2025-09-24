@@ -1,4 +1,4 @@
-# Node.js Service Deployment (WIP)
+# Node.js Service Deployment
 Deploy a Node.js Service to a remote server using GitHub Actions
 
 ## Project structure
