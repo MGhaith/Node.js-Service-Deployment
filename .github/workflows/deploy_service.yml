@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  terraform:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,6 +42,13 @@ jobs:
         working-directory: ./terraform
         id: tf
         run: echo "SERVER_IP=$(terraform output -raw server_ip)" >> $GITHUB_ENV
+  
+  ansible:
+    runs-on: ubuntu-latest
+    needs: terraform
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Write SSH key file
         run: |
@@ -55,7 +62,7 @@ jobs:
         run: |
           SSH_KEY_PATH=$(pwd)/private_key.pem
           echo "[node_server]" > inventory.ini
-          echo "${{ env.SERVER_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> inventory.ini
+          echo "${{ needs.terraform.outputs.server_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY_PATH}" >> inventory.ini
           echo "[node_server:vars]" >> inventory.ini
           echo "ansible_python_interpreter=/usr/bin/python3" >> inventory.ini
 
