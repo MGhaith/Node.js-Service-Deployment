@@ -98,7 +98,7 @@ You need this repository to store the project code, trigger the deployment workf
     }
     ```
 
-#### 4. Update project files.
+#### 5. Update project files.
 1. In `.github\workflows\deploy_service.yml`, change the `role-to-assume` value to your role ARN.
     ``` yml
     - name: Configure AWS credentials via OIDC (Terraform)
@@ -118,7 +118,7 @@ You need this repository to store the project code, trigger the deployment workf
         dest: /tmp/node-service-repo
         version: main
     ```
-#### 5. Push changes to trigger deployment.
+#### 6. Push changes to trigger deployment.
 1. Commit and push your changes to the `main` branch of the repository you created.
     ```
     git add .
@@ -126,3 +126,26 @@ You need this repository to store the project code, trigger the deployment workf
     git push origin main
     ```
 2. Check the Actions tab in your repository to monitor the deployment progress.
+
+## Github Actions Workflow
+
+The GitHub Actions workflow (`deploy_service.yml`) automates the deployment process through three main jobs:
+
+### 1. Terraform Job
+- Triggered on push to main branch (excluding README and git files)
+- Sets up Terraform and AWS credentials via OIDC
+- Deploys EC2 instance using Terraform configurations
+- Outputs the server IP for use in subsequent jobs
+
+### 2. Ansible Job
+- Runs after successful Terraform deployment
+- Configures SSH access using repository secrets
+- Generates Ansible inventory with server IP and private key secret
+- Runs Ansible playbook to install and configure the Node.js service
+
+### 3. Cleanup Job
+- Only runs if previous jobs fail
+- Destroys AWS resources using Terraform
+- Ensures no orphaned resources remain in case of deployment failure
+
+The workflow uses repository secrets (`SSH_PRIVATE_KEY` and `SSH_PUBLIC_KEY`) for secure access and AWS OIDC for authentication. It follows IaC principles by using Terraform for infrastructure provisioning and Ansible for configuration management.
