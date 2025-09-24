@@ -22,7 +22,7 @@ jobs:
       - name: Configure AWS credentials via OIDC (Terraform)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::075091538636:role/github-node-oicd
+          role-to-assume: arn:aws:iam::075091538636:role/github-node-oicd # Change this to your role ARN
           aws-region: us-east-1
 
       - name: Deploy EC2 Instance
