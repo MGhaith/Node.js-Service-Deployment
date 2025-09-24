@@ -138,6 +138,22 @@ To destroy the infrastructure created by this project, follow these steps:
     ```
 3. Enter you public key content from `~/.ssh/id_rsa.pub` and confirm the destruction when prompted.
 
+## Node.js Application
+The Node.js service is a minimal Express app with one endpoint:
+
+```rust
+GET /
+Response: "Hello, world!"
+```
+
+- For local testing:
+    ```bash
+    cd node_app
+    npm install
+    node index.js
+    ```
+> **Note**: You can modify the Node.js application code according to your preferences. However, when making significant changes to the application structure or dependencies, make sure to review and update the `ansible\roles\app\tasks\main.yml` file accordingly to ensure proper deployment.
+
 ## Github Actions Workflow
 
 The GitHub Actions workflow (`deploy_service.yml`) automates the deployment process through three main jobs:
