@@ -2,7 +2,7 @@ name: Deploy Node.js Service
 
 on:
   push:
-    branches: [ "testing-cicd" ]
+    branches: [ "main" ]
 
 permissions:
   id-token: write
