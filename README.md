@@ -65,6 +65,31 @@ You need this repository to store the project code, trigger the deployment workf
                 "Effect": "Allow",
                 "Action": "sts:GetCallerIdentity",
                 "Resource": "*"
+            },
+            {
+                "Sid": "TerraformS3Backend",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:ListBucket"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::dockerized-service-terraform-state-075091538636",
+                    "arn:aws:s3:::dockerized-service-terraform-state-075091538636/*"
+                ]
+            },
+            {
+                "Sid": "TerraformDynamoDBLock",
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:UpdateItem"
+                ],
+                "Resource": "arn:aws:dynamodb:us-east-1:075091538636:table/dockerized-service-terraform-locks"
             }
         ]
     }
@@ -89,10 +114,10 @@ You need this repository to store the project code, trigger the deployment workf
       required_version = ">= 1.13.0"
   
       backend "s3" {
-        bucket         = "node-app-terraform-state-<Your AWS Account ID>"   # Change this
+        bucket         = "node-app-terraform-state-<Your AWS Account ID>" # Change this
         key            = "global/terraform.tfstate"                     
         region         = "us-east-1"                                    
-        dynamodb_table = "node-app-terraform-locks"                         # And this 
+        dynamodb_table = "node-app-terraform-locks" # And this 
         encrypt        = true                                           
       }
     }
