@@ -40,7 +40,34 @@ You need this repository to store the project code, trigger the deployment workf
    - Name: `SSH_PUBLIC_KEY`
    - Value: Your public SSH key (contents of `~/.ssh/id_rsa.pub`)
 
-#### 3. Create IAM Role for OIDC
+#### 3. Create S3 bucket and DynamoDB table for Terraform state
+1. Log in to the [AWS Management Console](https://console.aws.amazon.com/).
+2. Navigate to the S3 service and create a new S3 bucket.
+    - Bucket name: `node-app-terraform-state-<Your AWS Account ID>` (Replace `<Your AWS Account ID>` with your AWS Account ID)
+    - Region: `us-east-1`
+    - Enable versioning
+    - Enable public access block
+    - Create bucket
+3. Navigate to the S3 service and create a new DynamoDB table for state locking
+    - Table name: `node-app-terraform-locks`
+    - Partition key: `LockID` (String)
+    - Create table
+4. update `terraform\backend.tf` with your bucket name and DynamoDB table name.
+    ``` hcl
+    terraform {
+      required_version = ">= 1.13.0"
+  
+      backend "s3" {
+        bucket         = "node-app-terraform-state-<Your AWS Account ID>" # Change this
+        key            = "global/terraform.tfstate"                     
+        region         = "us-east-1"                                    
+        dynamodb_table = "node-app-terraform-locks" # And this 
+        encrypt        = true                                           
+      }
+    }
+    ```
+
+#### 4. Create IAM Role for OIDC
 1. Log in to the [AWS Management Console](https://console.aws.amazon.com/).
 2. Navigate to the IAM service.
 3. Create a new `Web identity` role
@@ -76,8 +103,8 @@ You need this repository to store the project code, trigger the deployment workf
                     "s3:ListBucket"
                 ],
                 "Resource": [
-                    "arn:aws:s3:::dockerized-service-terraform-state-075091538636",
-                    "arn:aws:s3:::dockerized-service-terraform-state-075091538636/*"
+                    "<Your S3 Bucket Name ARN>",
+                    "<Your S3 Bucket Name ARN>/*"
                 ]
             },
             {
@@ -89,39 +116,14 @@ You need this repository to store the project code, trigger the deployment workf
                     "dynamodb:DeleteItem",
                     "dynamodb:UpdateItem"
                 ],
-                "Resource": "arn:aws:dynamodb:us-east-1:075091538636:table/dockerized-service-terraform-locks"
+                "Resource": "<Your DynamoDB Table ARN>"
             }
         ]
     }
     ```
-5. Copy the Role ARN, we will need it later.
+    > **Note**: Replace `<Your S3 Bucket Name ARN>` and `<Your DynamoDB Table ARN>` with your State Bucket ARN and DynamoDB Table ARN created for Terraform remote state (`./terraform/backend.tf`).
 
-#### 4. Create S3 bucket and DynamoDB table for Terraform state
-1. Log in to the [AWS Management Console](https://console.aws.amazon.com/).
-2. Navigate to the S3 service and create a new S3 bucket.
-    - Bucket name: `node-app-terraform-state-<Your AWS Account ID>` (Replace `<Your AWS Account ID>` with your AWS Account ID)
-    - Region: `us-east-1`
-    - Enable versioning
-    - Enable public access block
-    - Create bucket
-3. Navigate to the S3 service and create a new DynamoDB table for state locking
-    - Table name: `node-app-terraform-locks`
-    - Partition key: `LockID` (String)
-    - Create table
-4. update `terraform\backend.tf` with your bucket name and DynamoDB table name.
-    ``` hcl
-    terraform {
-      required_version = ">= 1.13.0"
-  
-      backend "s3" {
-        bucket         = "node-app-terraform-state-<Your AWS Account ID>" # Change this
-        key            = "global/terraform.tfstate"                     
-        region         = "us-east-1"                                    
-        dynamodb_table = "node-app-terraform-locks" # And this 
-        encrypt        = true                                           
-      }
-    }
-    ```
+5. Copy the Role ARN, we will need it later.
 
 #### 5. Update project files.
 1. In `.github\workflows\deploy_service.yml`, change the `role-to-assume` value to your role ARN.
